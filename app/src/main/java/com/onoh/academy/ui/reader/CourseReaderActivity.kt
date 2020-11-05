@@ -2,9 +2,11 @@ package com.onoh.academy.ui.reader
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.lifecycle.ViewModelProvider
 import com.onoh.academy.R
 import com.onoh.academy.ui.reader.content.ModuleContentFragment
 import com.onoh.academy.ui.reader.list.ModuleListFragment
+import com.onoh.academy.viewmodel.ViewModelFactory
 
 class CourseReaderActivity : AppCompatActivity(), CourseReaderCallback {
 
@@ -17,9 +19,12 @@ class CourseReaderActivity : AppCompatActivity(), CourseReaderCallback {
         setContentView(R.layout.activity_course_reader)
 
         val bundle = intent.extras
+        val factory = ViewModelFactory.getInstance(this)
+        val viewModel = ViewModelProvider(this,factory)[CourseReaderViewModel::class.java]
         if (bundle != null) {
             val courseId = bundle.getString(EXTRA_COURSE_ID)
             if (courseId != null) {
+                viewModel.setCourseId(courseId)
                 populateFragment()
             }
         }

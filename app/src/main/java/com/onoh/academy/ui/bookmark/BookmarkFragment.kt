@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.onoh.academy.R
-import com.onoh.academy.data.CourseEntity
-import com.onoh.academy.utils.DataDummy
+import com.onoh.academy.data.source.local.entity.CourseEntity
+import com.onoh.academy.viewmodel.ViewModelFactory
 import kotlinx.android.synthetic.main.fragment_bookmark.*
 
 class BookmarkFragment : Fragment(),BookmarkFragmentCallback  {
@@ -23,9 +25,17 @@ class BookmarkFragment : Fragment(),BookmarkFragmentCallback  {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (activity != null) {
-            val courses = DataDummy.generateDummyCourses()
+            val factory = ViewModelFactory.getInstance(requireActivity())
+            val viewModel = ViewModelProvider(this, factory)[BookmarkViewModel::class.java]
+
             val adapter = BookmarkAdapter(this)
-            adapter.setCourses(courses)
+            progress_bar.visibility = View.VISIBLE
+            viewModel.getBookmarks().observe(viewLifecycleOwner, Observer{ courses ->
+                progress_bar.visibility = View.GONE
+                adapter.setCourses(courses)
+                adapter.notifyDataSetChanged()
+            })
+
             with(rv_bookmark) {
                 layoutManager = LinearLayoutManager(context)
                 setHasFixedSize(true)
@@ -36,7 +46,7 @@ class BookmarkFragment : Fragment(),BookmarkFragmentCallback  {
     override fun onShareClick(course: CourseEntity) {
         if (activity != null) {
             val mimeType = "text/plain"
-            ShareCompat.IntentBuilder.from(activity!!).apply {
+            ShareCompat.IntentBuilder.from(requireActivity()).apply {
                 setType(mimeType)
                 setChooserTitle("Bagikan aplikasi ini sekarang.")
                 setText(resources.getString(R.string.share_text, course.title))
