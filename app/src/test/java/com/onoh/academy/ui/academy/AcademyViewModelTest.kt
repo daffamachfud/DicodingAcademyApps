@@ -3,9 +3,11 @@ package com.onoh.academy.ui.academy
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.paging.PagedList
 import com.onoh.academy.data.source.AcademyRepository
 import com.onoh.academy.data.source.local.entity.CourseEntity
 import com.onoh.academy.utils.DataDummy
+import com.onoh.academy.vo.Resource
 import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
@@ -37,7 +39,10 @@ class AcademyViewModelTest {
     private lateinit var academyRepository: AcademyRepository
 
     @Mock
-    private lateinit var observer: Observer<List<CourseEntity>>
+    private lateinit var observer: Observer<Resource<PagedList<CourseEntity>>>
+
+    @Mock
+    private lateinit var pagedList: PagedList<CourseEntity>
 
     @Before
     fun setUp(){
@@ -46,17 +51,18 @@ class AcademyViewModelTest {
 
     @Test
     fun getCourses() {
-        val dummyCourses = DataDummy.generateDummyCourses()
-        val courses = MutableLiveData<List<CourseEntity>>()
+        val dummyCourses = Resource.success(pagedList)
+        `when`(dummyCourses.data?.size).thenReturn(5)
+        val courses = MutableLiveData<Resource<PagedList<CourseEntity>>>()
         courses.value = dummyCourses
 
         `when`(academyRepository.getAllCourses()).thenReturn(courses)
-        val courseEntities = viewModel.getCourse().value
+        val courseEntities = viewModel.getCourses().value?.data
         verify(academyRepository).getAllCourses()
         assertNotNull(courseEntities)
         assertEquals(5, courseEntities?.size)
 
-        viewModel.getCourse().observeForever(observer)
+        viewModel.getCourses().observeForever(observer)
         verify(observer).onChanged(dummyCourses)
     }
 }

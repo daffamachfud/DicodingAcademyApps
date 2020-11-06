@@ -9,9 +9,7 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-
 import com.onoh.academy.R
-import com.onoh.academy.utils.DataDummy
 import com.onoh.academy.viewmodel.ViewModelFactory
 import com.onoh.academy.vo.Status
 import kotlinx.android.synthetic.main.fragment_academy.*
@@ -35,13 +33,13 @@ class AcademyFragment : Fragment() {
 
             val academyAdapter = AcademyAdapter()
             progress_bar.visibility = View.VISIBLE
-            viewModel.getCourses().observe(this, Observer { courses ->
+            viewModel.getCourses().observe(viewLifecycleOwner, Observer { courses ->
                 if (courses != null) {
                     when (courses.status) {
                         Status.LOADING -> progress_bar.visibility = View.VISIBLE
                         Status.SUCCESS -> {
                             progress_bar.visibility = View.GONE
-                            academyAdapter.setCourses(courses.data)
+                            academyAdapter.submitList(courses.data)
                             academyAdapter.notifyDataSetChanged()
                         }
                         Status.ERROR -> {
